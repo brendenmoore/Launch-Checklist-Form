@@ -1,6 +1,9 @@
 // Write your JavaScript code here!
 
 window.addEventListener("load", function() {
+
+   loadData();
+
    let form = document.getElementById("launchForm");
    form.addEventListener("submit", function(event) {
       let pilot = document.getElementById("pilotName").value;
@@ -10,8 +13,10 @@ window.addEventListener("load", function() {
 
 
 
-      if (!isValidForm(pilot, copilot, fuel, cargo)) {
-         alert("Invalid Form!");
+      if (!isFormFilled(pilot, copilot, fuel, cargo)) {
+         alert("Invalid Form: All Inputs are required.");
+      } else if (!isValidForm(pilot, copilot, fuel, cargo)) {
+         alert("Make sure to enter valid info for each field.");
       } else {
          checkRequirements(pilot, copilot, fuel, cargo);
       }
@@ -22,9 +27,15 @@ window.addEventListener("load", function() {
 });
 
 function isValidForm(pilot, copilot, fuel, cargo) {
-   if (pilot === "" || copilot === "" || fuel === "" || cargo === "") {
+   if (isNaN(Number(fuel)) || isNaN(Number(cargo)) || !isNaN(Number(pilot)) || !isNaN(Number(copilot))) {
       return false;
-   } else if (isNaN(Number(fuel)) || isNaN(Number(cargo)) || !isNaN(Number(pilot)) || !isNaN(Number(copilot))) {
+   } else {
+      return true;
+   }
+}
+
+function isFormFilled(pilot, copilot, fuel, cargo) {
+   if (pilot === "" || copilot === "" || fuel === "" || cargo === "") {
       return false;
    } else {
       return true;
@@ -44,7 +55,7 @@ function checkRequirements(pilot, copilot, fuel, cargo) {
 
    let liFuelStatus = document.getElementById("fuelStatus");
    if (fuel < 10000) {
-      liFuelStatus.innerHTML = "Not enough fuel.";
+      liFuelStatus.innerHTML = "Fuel level too low for launch.";
       isReady = false;
    } else {
       liFuelStatus.innerHTML = "Fuel level high enough for launch";
@@ -52,7 +63,7 @@ function checkRequirements(pilot, copilot, fuel, cargo) {
 
    let liCargoStatus = document.getElementById("cargoStatus");
    if (cargo > 10000) {
-      liCargoStatus.innerHTML = "Too much mass for shuttle to take off.";
+      liCargoStatus.innerHTML = "Cargo mass too high for shuttle to take off.";
       isReady = false;
    } else {
       liCargoStatus.innerHTML = "Cargo mass low enough for launch";
@@ -67,14 +78,24 @@ function checkRequirements(pilot, copilot, fuel, cargo) {
    }
 }
 
-/* This block of code shows how to format the HTML once you fetch some planetary JSON!
-<h2>Mission Destination</h2>
-<ol>
-   <li>Name: ${}</li>
-   <li>Diameter: ${}</li>
-   <li>Star: ${}</li>
-   <li>Distance from Earth: ${}</li>
-   <li>Number of Moons: ${}</li>
-</ol>
-<img src="${}">
-*/
+function loadData() {
+   fetch("https://handlers.education.launchcode.org/static/planets.json")
+      .then(function(response) {
+         response.json().then(function(json) {
+            let randomIndex = Math.floor(Math.random() * json.length)
+            let destination = json[randomIndex];
+            let divMissionTarget = document.getElementById("missionTarget");
+            divMissionTarget.innerHTML = `
+               <h2>Mission Destination</h2>
+                  <ol>
+                     <li>Name: ${destination.name}</li>
+                     <li>Diameter: ${destination.diameter}</li>
+                     <li>Star: ${destination.star}</li>
+                     <li>Distance from Earth: ${destination.distance}</li>
+                     <li>Number of Moons: ${destination.moons}</li>
+                  </ol>
+               <img src="${destination.image}">
+         `
+         });
+      });
+}
